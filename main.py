@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from knapsack_solver import KnapsackSolver
 
 def load_data(filename):
@@ -12,9 +13,11 @@ def solve_as_simplex(dataset):
     profits = load_data(f"p0{dataset}_p.txt")
     optimal_selection = load_data(f"p0{dataset}_s.txt") # For validation
 
+    start_time = time.time()
     solver = KnapsackSolver(capacity, weights, profits)
     solution, max_profit = solver.solve_linear()
     normal_solution = [x for x in solution]
+    end_time = time.time()
 
     # Calculate profit from the optimal solution
     optimal_profit = sum(p * x for p, x in zip(profits, optimal_selection))
@@ -23,6 +26,7 @@ def solve_as_simplex(dataset):
     print(f"Max Profit: {max_profit}") # Negate because we minimized the negative profit
     print(f"Optimal selection: {optimal_selection}")
     print(f"Optimal profit: {optimal_profit}")
+    print(f"Elapsed time: {end_time-start_time} seconds")
 
 def solve_as_branch_and_bound(dataset):
     capacity = load_data(f"p0{dataset}_c.txt")[0]
@@ -43,5 +47,5 @@ def solve_as_branch_and_bound(dataset):
 
 
 
-solve_as_simplex(2)
-solve_as_branch_and_bound(2)
+solve_as_simplex(7)
+#solve_as_branch_and_bound(2)
