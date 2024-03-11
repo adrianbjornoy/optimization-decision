@@ -57,4 +57,58 @@ class KnapsackSolver:
         
         return self.maxProfit, self.bestItems
 
+    def genetic_algorithm(self, population_size=50, mutation_rate=0.01, generations=100):
+        def create_individual():
+            return np.random.choice([0, 1], size=(self.n,))
+    
+        def compute_fitness(individual):
+            weight = np.sum(individual * self.weights)
+            profit = np.sum(individual * self.profits)
+            # Penalize solutions exceeding the capacity
+            if weight > self.capacity:
+                return 0
+            else:
+                return profit
         
+        def crossover(parent1, parent2):
+            crossover_point = np.random.randint(1, self.n-1)
+            child1 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
+            child2 = np.concatenate((parent2[:crossover_point], parent1[crossover_point:]))
+            return child1, child2
+        
+        def mutate(individual):
+            for i in range(self.n):
+                if np.random.rand() < mutation_rate:
+                    individual[i] = 1 - individual[i]
+            return individual
+
+        # Initialize population
+        population = [create_individual() for _ in range(population_size)]
+        best_solution = None
+        best_fitness = 0
+
+        for generation in range(generations):
+            # Evaluate fitness
+            fitnesses = [compute_fitness(individual) for individual in population]
+            
+            # Selection
+            parents_indices = np.random.choice(population_size, size=population_size, replace=True, p=np.array(fitnesses)/sum(fitnesses))
+            parents = [population[i] for i in parents_indices]
+            
+            # Crossover and mutation
+            next_population = []
+            for i in range(0, population_size, 2):
+                parent1, parent2 = parents[i], parents[i+1]
+                child1, child2 = crossover(parent1, parent2)
+                child1, child2 = mutate(child1), mutate(child2)
+                next_population.extend([child1, child2])
+            
+            population = next_population
+        
+            # Update best solution
+            current_best_fitness = max(fitnesses)
+            if current_best_fitness > best_fitness:
+                best_fitness = current_best_fitness
+                best_solution = population[np.argmax(fitnesses)]
+
+        return best_solution, best_fitness

@@ -44,8 +44,18 @@ def solve_as_branch_and_bound(dataset):
     print("Optimal Solution (Selected Items):", best_items)
     print("Maximum Profit:", max_profit)
 
+def solve_as_genetic_algorithm(dataset):
+    capacity = load_data(f"p0{dataset}_c.txt")[0]
+    weights = load_data(f"p0{dataset}_w.txt")
+    profits = load_data(f"p0{dataset}_p.txt")
+    optimal_selection = load_data(f"p0{dataset}_s.txt") # For validation
+    solver = KnapsackSolver(capacity, weights, profits)
 
+    solution, profit = solver.genetic_algorithm()
+    print("GA Solution:", solution)
+    print("GA Profit:", profit)
 
 
 solve_as_simplex(7)
 #solve_as_branch_and_bound(2)
+solve_as_genetic_algorithm(7)
