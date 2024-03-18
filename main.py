@@ -34,28 +34,35 @@ def solve_as_branch_and_bound(dataset):
     profits = load_data(f"p0{dataset}_p.txt")
     optimal_selection = load_data(f"p0{dataset}_s.txt") # For validation
 
-    #Initialize the solver with your problem data
+    #Initialize the solver with the problem data
+    start_time = time.time()
     solver = KnapsackSolver(capacity, weights, profits)
     
     # Calculate the optimal solution using Branch and Bound
     max_profit, best_items = solver.branch_and_bound()
-
+    end_time = time.time()
     # Print the results
     print("Optimal Solution (Selected Items):", best_items)
     print("Maximum Profit:", max_profit)
+    print(f"Elapsed time: {end_time-start_time} seconds")
+    print("Number of times linear programming was done:", solver.lp_counter)
 
 def solve_as_genetic_algorithm(dataset):
     capacity = load_data(f"p0{dataset}_c.txt")[0]
     weights = load_data(f"p0{dataset}_w.txt")
     profits = load_data(f"p0{dataset}_p.txt")
     optimal_selection = load_data(f"p0{dataset}_s.txt") # For validation
-    solver = KnapsackSolver(capacity, weights, profits)
 
-    solution, profit = solver.genetic_algorithm()
+    start_time = time.time()
+    solver = KnapsackSolver(capacity, weights, profits)
+    solution, profit, weight = solver.genetic_algorithm()
+    end_time = time.time()
+
     print("GA Solution:", solution)
     print("GA Profit:", profit)
+    print("GA Weight:", weight )
+    print(f"Elapsed time: {end_time-start_time} seconds")
 
-
-solve_as_simplex(7)
-#solve_as_branch_and_bound(2)
-solve_as_genetic_algorithm(7)
+#solve_as_simplex(2)
+solve_as_branch_and_bound(7)
+#solve_as_genetic_algorithm(2)

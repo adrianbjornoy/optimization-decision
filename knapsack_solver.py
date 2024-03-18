@@ -1,10 +1,12 @@
 # knapsack_solver.py
 import numpy as np
 from scipy.optimize import linprog
+import matplotlib.pyplot as plt
 
 class KnapsackSolver:
     import numpy as np
     from scipy.optimize import linprog
+    import matplotlib.pyplot as plt
     
     def __init__(self, capacity, weights, profits):
         self.capacity = capacity
@@ -13,13 +15,14 @@ class KnapsackSolver:
         self.n = len(weights)
         self.maxProfit = 0
         self.bestItems = np.zeros(self.n)
+        self.lp_counter = 0
     
     def solve_linear(self, include=None, exclude=None):
         if include is None:
             include = []
         if exclude is None:
             exclude = []
-
+        self.lp_counter += 1
         num_items = len(self.weights)
         c = -np.array(self.profits)  # Coefficients for the objective function (negative for maximization)
         A = np.array([self.weights]) # Constraints matrix
@@ -34,8 +37,7 @@ class KnapsackSolver:
 
     def _branch_and_bound(self, level, currentWeight, currentProfit, currentItems):
         # Use linear relaxation to obtain an upper bound at this node
-        _, linear_relaxation_profit = self.solve_linear(exclude=np.where(currentItems[:level] == 0)[0].tolist())
-        
+        _,linear_relaxation_profit = self.solve_linear(exclude=np.where(currentItems[:level] == 0)[0].tolist())
         # Prune the branch if the upper bound is not better than the current max profit
         if linear_relaxation_profit <= self.maxProfit:
             return self.maxProfit, self.bestItems
@@ -57,19 +59,19 @@ class KnapsackSolver:
         
         return self.maxProfit, self.bestItems
 
-    def genetic_algorithm(self, population_size=50, mutation_rate=0.01, generations=100):
+    def genetic_algorithm(self, population_size=20, mutation_rate=0.1, generations=100):
+        
         def create_individual():
             return np.random.choice([0, 1], size=(self.n,))
     
-        def compute_fitness(individual):
-            weight = np.sum(individual * self.weights)
-            profit = np.sum(individual * self.profits)
-            # Penalize solutions exceeding the capacity
-            if weight > self.capacity:
+        def compute_fitness(individual, weights, profits, capacity, penalty_rate=0.1):
+            weight = np.sum(individual * weights)
+            profit = np.sum(individual * profits)
+            if weight > capacity:
                 return 0
             else:
                 return profit
-        
+
         def crossover(parent1, parent2):
             crossover_point = np.random.randint(1, self.n-1)
             child1 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
@@ -85,12 +87,14 @@ class KnapsackSolver:
         # Initialize population
         population = [create_individual() for _ in range(population_size)]
         best_solution = None
-        best_fitness = 0
+        best_fitness = -np.inf
+        max_fitness_over_generations = []
+        diversity_over_generations = []
 
         for generation in range(generations):
-            # Evaluate fitness
-            fitnesses = [compute_fitness(individual) for individual in population]
-            
+            # Evaluate fitness for every individual in the current generation
+            fitnesses = [compute_fitness(individual, self.weights, self.profits, self.capacity) for individual in population]
+
             # Selection
             parents_indices = np.random.choice(population_size, size=population_size, replace=True, p=np.array(fitnesses)/sum(fitnesses))
             parents = [population[i] for i in parents_indices]
@@ -102,13 +106,46 @@ class KnapsackSolver:
                 child1, child2 = crossover(parent1, parent2)
                 child1, child2 = mutate(child1), mutate(child2)
                 next_population.extend([child1, child2])
-            
+
             population = next_population
         
-            # Update best solution
+            # Evaluate fitness for every individual in the current generation
+            fitnesses = [compute_fitness(individual, self.weights, self.profits, self.capacity) for individual in population]
             current_best_fitness = max(fitnesses)
-            if current_best_fitness > best_fitness:
-                best_fitness = current_best_fitness
-                best_solution = population[np.argmax(fitnesses)]
+            #print(current_best_fitness)
+            current_best_idx = fitnesses.index(current_best_fitness)
+            current_best_solution = population[current_best_idx]
+            #print(current_best_solution)
 
-        return best_solution, best_fitness
+            diversity = len(np.unique(np.vstack(population), axis=0))
+            max_fitness_over_generations.append(current_best_fitness)
+            diversity_over_generations.append(diversity)
+
+            if current_best_fitness > best_fitness:
+                print(f"Updating best fitness: {best_fitness} -> {current_best_fitness}")
+                best_fitness = current_best_fitness
+                best_solution = current_best_solution
+
+                actual_profit = np.sum(best_solution * self.profits)
+                actual_weight = np.sum(best_solution * self.weights)
+        
+        # Plotting the maximum fitness over generations
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)  # 1 row, 2 columns, first subplot
+        plt.plot(max_fitness_over_generations, label='Max Fitness')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title('Maximum Fitness over Generations')
+        plt.legend()
+
+        # Plotting the diversity over generations
+        plt.subplot(1, 2, 2)  # 1 row, 2 columns, second subplot
+        plt.plot(diversity_over_generations, label='Diversity', color='orange')
+        plt.xlabel('Generation')
+        plt.ylabel('Diversity')
+        plt.title('Population Diversity over Generations')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+        return best_solution, actual_profit, actual_weight
