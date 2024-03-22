@@ -59,7 +59,7 @@ class KnapsackSolver:
         
         return self.maxProfit, self.bestItems
 
-    def genetic_algorithm(self, population_size=20, mutation_rate=0.1, generations=100):
+    def genetic_algorithm(self, population_size=200, mutation_rate=0.01, generations=100):
         
         def create_individual():
             return np.random.choice([0, 1], size=(self.n,))
@@ -131,20 +131,26 @@ class KnapsackSolver:
         
         # Plotting the maximum fitness over generations
         plt.figure(figsize=(10, 5))
-        plt.subplot(1, 2, 1)  # 1 row, 2 columns, first subplot
         plt.plot(max_fitness_over_generations, label='Max Fitness')
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
-        plt.title('Maximum Fitness over Generations')
+        plt.title(f"Maximum Fitness over Generations. \n Population size: {population_size}, \n Mutation Rate: {mutation_rate} \n Number of Generations: {generations}")
         plt.legend()
 
-        # Plotting the diversity over generations
-        plt.subplot(1, 2, 2)  # 1 row, 2 columns, second subplot
-        plt.plot(diversity_over_generations, label='Diversity', color='orange')
-        plt.xlabel('Generation')
-        plt.ylabel('Diversity')
-        plt.title('Population Diversity over Generations')
-        plt.legend()
+        # Plotting the maximum fitness over generations together with generation diversity
+        # plt.figure(figsize=(10, 5))
+        # plt.subplot(1, 2, 1)  # 1 row, 2 columns, first subplot
+        # plt.plot(max_fitness_over_generations, label='Max Fitness')
+        # plt.xlabel('Generation')
+        # plt.ylabel('Fitness')
+        # plt.title('Maximum Fitness over Generations')
+        # plt.legend()
+        # # plt.subplot(1, 2, 2)  # 1 row, 2 columns, second subplot
+        # # plt.plot(diversity_over_generations, label='Diversity', color='orange')
+        # # plt.xlabel('Generation')
+        # # plt.ylabel('Diversity')
+        # # plt.title('Population Diversity over Generations')
+        # # plt.legend()
 
         plt.tight_layout()
         plt.show()

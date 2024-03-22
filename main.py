@@ -63,6 +63,6 @@ def solve_as_genetic_algorithm(dataset):
     print("GA Weight:", weight )
     print(f"Elapsed time: {end_time-start_time} seconds")
 
-#solve_as_simplex(2)
+#solve_as_simplex(8)
 #solve_as_branch_and_bound(8)
-solve_as_genetic_algorithm(7)
+solve_as_genetic_algorithm(8)
